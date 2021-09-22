@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Demo</title>
+    <style>
+    /* styles */
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /*======= Map Styling ============*/
+    /*a[href^="https://maps.google.com/maps"]{display:none !important}
+
+    .gmnoprint a, .gmnoprint span, .gmnoprint div {
+        display:none;
+    }*/
+    </style>
+  </head>
+  <body>
+
+    <div id="map"></div>
+
+    <script>
+    var TILE_URL = 'http://localhost:5000/tiles/{x}/{y}/{z}';
+
+    var map;
+    var mapEl;
+    var layer;
+    var layerID = 'my-custom-layer';
+
+    window.initMap = function() {
+      // Select the element with id="map".
+      mapEl = document.querySelector('#map');
+      
+      // Create a new map.
+      map = new google.maps.Map(mapEl, {
+        center: new google.maps.LatLng(48.866667, 2.333333),
+        zoom: 2,
+        disableDefaultUI: true
+      });
+      
+      // Create a tile layer, configured to fetch tiles from TILE_URL.
+      layer = new google.maps.ImageMapType({
+        name: layerID,
+        getTileUrl: function(coord, zoom) {
+          console.log(coord);
+          var url = TILE_URL
+            .replace('{x}', coord.x)
+            .replace('{y}', coord.y)
+            .replace('{z}', zoom);
+          return url;
+        },
+        tileSize: new google.maps.Size(256, 256),
+        minZoom: 1,
+        maxZoom: 20
+      });
+      
+      // Apply the new tile layer to the map.
+      map.mapTypes.set(layerID, layer);
+      map.setMapTypeId(layerID);
+
+      // autofocus
+      google.maps.event.addListenerOnce(map, 'tilesloaded', function(){
+        document.querySelectorAll('[tabindex="0"]')[0].focus();
+      });
+    };
+    </script>
+    
+    <!-- NOTE: The 'key' parameter should be replaced with your Google Maps API Key. -->
+    <script src="https://maps.googleapis.com/maps/api/js?callback=initMap&key=YOUR_API_KEY"></script>
+    
+  </body>
+</html>
