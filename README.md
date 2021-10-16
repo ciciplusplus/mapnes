@@ -48,9 +48,9 @@ If it's not 3.x, please install one from [Python Releases for Windows](https://w
 
 Next, install dependencies:
 ```
-py -m pip install requests # network calls
-py -m pip install Flask # server
-py -m pip install Pillow # image library
+py -m pip install requests
+py -m pip install Flask
+py -m pip install Pillow
 ```
 
 Note: Installing Mapnik on Windows is tedious, so it's completly disabled on this branch (meaning no labels, though)
