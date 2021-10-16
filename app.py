@@ -5,7 +5,6 @@ from io import BytesIO
 
 import tempfile
 import math
-import mapnik
 import threading
 
 original_tile_size = 256
@@ -23,48 +22,6 @@ tile_water = Image.open("tiles/tile_water.png")
 tile_rock = Image.open("tiles/tile_rock.png")
 tile_snow = Image.open("tiles/tile_snow.png")
 tile_sand = Image.open("tiles/tile_sand.png")
-
-def minmax (a,b,c):
-    a = max(a,b)
-    a = min(a,c)
-    return a
-
-class GoogleProjection:
-    def __init__(self,levels=18):
-        self.Bc = []
-        self.Cc = []
-        self.zc = []
-        self.Ac = []
-        c = 256
-        for d in range(0,levels):
-            e = c/2;
-            self.Bc.append(c/360.0)
-            self.Cc.append(c/(2 * math.pi))
-            self.zc.append((e,e))
-            self.Ac.append(c)
-            c *= 2
-
-    def fromLLtoPixel(self,ll,zoom):
-        d = self.zc[zoom]
-        e = round(d[0] + ll[0] * self.Bc[zoom])
-        f = minmax(math.sin(math.radians(ll[1])),-0.9999,0.9999)
-        g = round(d[1] + 0.5*math.log((1+f)/(1-f))*-self.Cc[zoom])
-        return (e,g)
-
-    def fromPixelToLL(self,px,zoom):
-        e = self.zc[zoom]
-        f = (px[0] - e[0])/self.Bc[zoom]
-        g = (px[1] - e[1])/-self.Cc[zoom]
-        h = math.degrees( 2 * math.atan(math.exp(g)) - 0.5 * math.pi)
-        return (f,h)
-
-m = mapnik.Map(original_tile_size, original_tile_size)
-mapnik.load_map(m, "labels.xml")
-prj = mapnik.Projection(m.srs)
-maxZoom = 20
-tileproj = GoogleProjection(maxZoom + 1)
-
-lock = threading.Lock()
 
 @app.route("/")
 def hello_world():
@@ -109,42 +66,10 @@ def tiles(x, y, z):
     img.save(tmpPng, 'PNG')
     tmpPng.seek(0)
 
-    tmpPng2 = tempfile.NamedTemporaryFile(mode="w+b", delete=False, suffix=".png")
-    return render_tile(tmpPng.name, tmpPng2.name, x, y, z)
+    return send_file(tmpPng.name, mimetype='image/png')
 
 def serve_pil_image(pil_img):
     img_io = BytesIO()
     pil_img.save(img_io, 'PNG')
     img_io.seek(0)
     return send_file(img_io, mimetype='image/png')
-
-def render_tile(back_img, tile_handle, x, y, z):
-    # Calculate pixel positions of bottom-left & top-right
-    p0 = (x * 256, (y + 1) * 256)
-    p1 = ((x + 1) * 256, y * 256)
-
-    # Convert to LatLong (EPSG:4326)
-    l0 = tileproj.fromPixelToLL(p0, z);
-    l1 = tileproj.fromPixelToLL(p1, z);
-
-    # Convert to map projection (e.g. mercator co-ords EPSG:900913)
-    c0 = prj.forward(mapnik.Coord(l0[0],l0[1]))
-    c1 = prj.forward(mapnik.Coord(l1[0],l1[1]))
-
-    # Bounding box for the tile
-    bbox = mapnik.Box2d(c0.x, c0.y, c1.x, c1.y)
-
-    render_size = 256
-
-    with lock:
-        m.resize(render_size, render_size)
-        m.zoom_to_box(bbox)
-        m.buffer_size = 128
-
-        # Render image with default Agg renderer
-        im = mapnik.Image(render_size, render_size)
-        m.background_image = back_img
-        mapnik.render(m, im)
-        im.save(tile_handle, 'png256')
-
-        return send_file(tile_handle, mimetype='image/png')

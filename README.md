@@ -42,6 +42,19 @@ sudp apt install python3-mapnik # mapnik bindings to python
 
 ⚠️ Note: If you installed Flask on local env, it may not find Mapnik installed globally. The easiest fix here is to install Flask globally as well.
 
+#### Windows
+First, open `cmd` and check you Python version with `py --version` <br>
+If it's not 3.x, please install one from [Python Releases for Windows](https://www.python.org/downloads/windows/)
+
+Next, install dependencies:
+```
+py -m pip install requests # network calls
+py -m pip install Flask # server
+py -m pip install Pillow # image library
+```
+
+Note: Installing Mapnik on Windows is tedious, so it's completly disabled on this branch (meaning no labels, though)
+
 #### Google API account
 
 Google API key is required for map to load, you should register and get one following this guide https://developers.google.com/maps/documentation/javascript/get-api-key <br>
@@ -49,7 +62,7 @@ Once obtained, place it instead `YOUR_API_KEY` in [./static/index.html](./static
 
 ## 👟 Run
 
-`FLASK_ENV=development flask run --host=0.0.0.0`
+`flask run --host=0.0.0.0`
 
 You will be able access it directly in browser http://localhost:5000/ <br><br>
 *In my setup I expose server to local network, so cartridge can connect to it too, that's why 0.0.0.0 binding is necessary.*
