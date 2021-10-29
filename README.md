@@ -47,6 +47,11 @@ sudp apt install python3-mapnik # mapnik bindings to python
 Google API key is required for map to load, you should register and get one following this guide https://developers.google.com/maps/documentation/javascript/get-api-key <br>
 Once obtained, place it instead `YOUR_API_KEY` in [./static/index.html](./static/index.html)
 
+If you have error message on load after that, make sure that:
+
+- "Maps JavaScript API" is enabled in [the console](https://console.cloud.google.com/apis/library?project=mapnes)
+- Billing account is created (Google API have free trial with no-auto charge after it's end)
+
 ## 👟 Run
 
 `FLASK_ENV=development flask run --host=0.0.0.0`
